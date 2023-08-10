@@ -1,0 +1,19 @@
+{
+  "links": {
+    "home": {
+      "title": "BentoCache",
+      "href": "/"
+    },
+    "github": {
+      "title": "Your project on Github",
+      "href": "https://github.com/dimerapp"
+    }
+  },
+  "sponsors_sources": [
+    "julien-r44"
+  ],
+  "search": {
+  },
+  "fileEditBaseUrl": "https://github.com/dimerapp/docs-boilerplate/blob/develop",
+  "copyright": "BentoCache"
+}

@@ -1,3 +1,7 @@
+---
+summary: Setup Bentocache in your application
+---
+
 # Quick setup
 
 You can install Bentocache via your favorite package manager.
@@ -10,17 +14,17 @@ Bentocache is an ESM-only package. You will also need Node.js 18 or higher.
 :::codegroup
 ```sh
 // title: npm
-npm i @julr/bento-cache
+npm i bentocache
 ```
 
 ```sh
 // title: pnpm
-pnpm add @julr/bento-cache
+pnpm add bentocache
 ```
 
 ```sh
 // title: yarn
-yarn add @julr/bento-cache
+yarn add bentocache
 ```
 :::
 
@@ -30,26 +34,30 @@ yarn add @julr/bento-cache
 Once installed, you can configure BentoCache in your application as follows:
 
 ```ts
-import { BentoCache } from '@julr/bentocache'
-import { memoryDriver } from '@julr/bentocache/drivers/memory'
-import { redisDriver } from '@julr/bentocache/drivers/redis'
+import { BentoCache } from 'bentocache'
+import { memoryDriver } from 'bentocache/drivers/memory'
+import { redisDriver } from 'bentocache/drivers/redis'
 
 const bento = new BentoCache({
   default: 'myCache',
-  list: {
-    myCache: memoryDriver({
-      maxSize: 10_000,
+  stores: {
+    myCache: {
       ttl: '2h'
-    }),
+      driver: memoryDriver({
+        maxSize: 10_000,
+      }),
+    },
 
-    redis: redisDriver({
+    redis: {
       prefix: 'my-app',
       ttl: '6h',
-      connection: {
-        host: '127.0.0.1',
-        port: 6379
-      }
-    })
+      driver: redisDriver({
+        connection: {
+          host: '127.0.0.1',
+          port: 6379
+        }
+      })
+    }
   }
 })
 ```
@@ -62,21 +70,23 @@ const bento = new BentoCache({
 ## Hybrid setup
 
 ```ts
-import { BentoCache } from '@julr/bento-cache'
-import { memoryDriver } from '@julr/bento-cache/drivers/memory'
-import { redisDriver } from '@julr/bento-cache/drivers/redis'
+import { BentoCache } from 'bentocache'
+import { memoryDriver } from 'bentocache/drivers/memory'
+import { redisDriver } from 'bentocache/drivers/redis'
 
 const bento = new BentoCache({
   default: 'hybrid',
 
-  list: {
-    hybrid: hybridDriver({
-      local: memoryDriver({/* ... */}),
-      remote: redisDriver({/* ... */}),
-      bus: redisBus({
-        connection: { host: '127.0.0.1', port: 6379 },
+  stores: {
+    hybrid: {
+      driver: hybridDriver({
+        local: memoryDriver({/* ... */}),
+        remote: redisDriver({/* ... */}),
+        bus: redisBus({
+          connection: { host: '127.0.0.1', port: 6379 },
+        }),
       }),
-    }),
+    },
   },
 })
 
@@ -88,9 +98,9 @@ With this setup, your in-memory cache will serve as the first level cache. If an
 
 In a multi-instance application, your different in-memory caches will be synchronized using the bus you have configured.
 
-More information on the [hybrid driver here](tbd)
+More information on the [hybrid driver here](./hybrid_driver.md)
 
-<!-- ## Next steps
+## Next steps
 
 ### Interacting with the cache
 
@@ -155,4 +165,4 @@ export default class UsersController {
 ```
 
 As simple as that, we just need to call the `delete` method on the namespace, passing the key we want to delete. 
-Note that if you are using the hybrid driver, the `delete` call will notify the other instances to delete the key from their local cache as well. -->
+Note that if you are using the hybrid driver, the `delete` call will notify the other instances to delete the key from their local cache as well.

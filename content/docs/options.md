@@ -1,8 +1,52 @@
+---
+summary: The list of options available to configure BentoCache
+---
+
 # Options
 
-Here at the different possible options of BentoCache. Some of them are configurable, either globally, at the driver level or at operation level ( when calling core methods like `getOrSet`, `get`, etc. ).
+Here at the different possible options of BentoCache. Some of them are configurable, either **globally**, at the **driver level** or at **operation level** ( when calling core methods like `getOrSet`, `get`, etc. ).
 
-Order of precedence is as follows: **Operation level > Driver level > Global level.**
+Order of precedence is as follows: **1. Operation level > 2. Driver level > 3. Global level.**
+
+```ts
+// title: Options levels
+const bentocache = new BentoCache({
+  default: 'memory'
+
+  // Global level 👇
+  ttl: '1h',
+  gracePeriod: {
+    enabled: true,
+    duration: '6h',
+    fallbackDuration: '5m'
+  },
+
+  stores: {
+    memory: {
+      driver: memoryDriver({ maxSize: 1_000 })
+      // Driver level 👇
+      ttl: '30m',
+      gracePeriod: { enabled: false }
+    }
+  }
+})
+
+// Operation level 👇
+bentocache.getOrSet('key', () => fetchFromDb(), {
+  ttl: '1h',
+  gracePeriod: { enabled: true }
+})
+```
+
+## TTL Formats
+
+Quick note about TTLs and durations. Everywhere you are asked to provide a TTL or a duration, you can provide either:
+
+- a `number` in milliseconds.
+- a `string`, duration in human-readable format, see [lukeed/ms](https://github.com/lukeed/ms) for more details on the different formats accepted.
+- In some cases : a `null` value. In the context of a TTL, this means that the item will never expire for example.
+
+## List of options
 
 ### `prefix`
 
@@ -10,7 +54,7 @@ Default: `undefined`
 
 Levels: `global`, `driver`
 
-This prefix will be added in front of all your cache keys. This can be useful, for example, in the case where you share a Redis with another application. Particularly when you need to `.clear()`. Without a prefix, all keys will be deleted, even those not added by your application.
+This prefix will be added in front of all your cache keys. This can be useful, for example, in the case where you share a Redis with another application. Particularly when you need to call `.clear()`. Without a prefix, all keys will be deleted, even those not added by your application.
 
 ### `ttl`
 
@@ -18,7 +62,7 @@ Default: `30s`
 
 Levels: `global`, `driver`, `operation`
 
-The TTL of the item to cache.
+The TTL of the item to cache. See [TTL formats](#ttl-formats).
 
 ### `suppressRemoteCacheError`
 
@@ -28,7 +72,7 @@ Levels: `global`, `driver`, `operation`
 
 In hybrid mode, if `false`, then errors thrown by your remote cache will be rethrown, and you will have to handle them yourself. Otherwise, they will just be ignored.
 
-Note that in some cases, like when you use Graceful Retain, errors will not be thrown, even if this option is set to `false`.
+Note that in some cases, like when you use [Grace Periods](./grace_periods.md), errors will not be thrown, even if this option is set to `false`. Since this is the whole point of grace periods.
 
 ### `earlyExpiration`
 
@@ -44,29 +88,33 @@ Default `undefined`
 
 Levels: `global`, `driver`, `operation`
 
-An object to configure the [grace period](grace_period):
+An object to configure the [grace period](./grace_periods.md):
 ```ts
 {
   enabled: true,
   duration: '6h',
-  delay: '5m'
+  fallbackDuration: '5m'
 }
 ```
 
-### `retryQueue`
+### `timeouts`
 
-Default: 
+Default: `undefined`
+Levels: `global`, `driver`, `operation`
+
+An object to configure the [timeouts](./timeouts.md)
+
 ```ts
 {
-  enabled: true,
-  maxSize: 1000,
+  soft: '1s',
+  hard: '3s'
 }
 ```
 
-Levels: `global`
+Basically, when invoking a factory : 
 
-An object to configure the retry queue of the bus. If not enabled, an item that fails to be sent to the bus will be dropped.
-`maxSize` is the maximum number of items that can be stored in the retry queue. If the queue is full, the oldest item will be dropped.
+- If the factory takes more than `soft` to resolve and a graced/stale value is still available, then it will be returned. Factory will continue to run in the background.
+- If the factory takes more than `hard` to resolve, then an exception will be thrown. You need to handle it yourself.
 
 ### `lockTimeout`
 
@@ -74,7 +122,9 @@ Default: `undefined`
 
 Levels: `global`, `operation`
 
-The maximum amount of time (in milliseconds) that the in-memory lock for [stampeded protection](./stampede_protection.md) can be held. If the lock is not released before this timeout, it will be released automatically.
+The maximum amount of time (in milliseconds) that the in-memory lock for [stampeded protection](./stampede_protection.md) can be held. If the lock is not released before this timeout, it will be released automatically. 
+
+This is usually not needed, but can provide an extra layer of protection against theoretical deadlocks.
 
 ### `logger`
 
@@ -84,7 +134,7 @@ Levels: `global`, `driver`
 
 Only configurable at the BentoCache level.
 
-See [logger](./logging.md) for more details.
+See [logger](./digging_deeper/logging.md) for more details.
 
 ### `emitter`
 
@@ -92,12 +142,4 @@ Default: `new EventEmitter()`.
 
 Only configurable at the BentoCache level.
 
-See [events](./events.md) for more details.
-
-
-## TTL Formats
-
-As a reminder, all TTLs accept two different formats:
-- a `number` in milliseconds.
-- a `string`, duration in human-readable format, see [lukeed/ms](https://github.com/lukeed/ms) for more details on the different formats accepted.
-
+See [events](./digging_deeper/events.md) for more details.

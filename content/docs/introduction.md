@@ -1,28 +1,32 @@
+---
+summary: Bentocache is a robust multi-tier caching library for Node.js applications
+---
+
 # Introduction
 
-Bentocache is a robust multi-tier caching solution for Node.js applications
+Bentocache is a robust multi-tier caching library for Node.js applications
 
 - 🗄️ Multi-tier caching
 - 🔄 Synchronization of local cache via Bus
 - 🚀 Many drivers (Redis, Upstash, In-memory, Postgres, Sqlite and others)
-- 🛡️ Graceful Retain and timeouts. Serve stale data when the store is dead or slow
+- 🛡️ Grace period and timeouts. Serve stale data when the store is dead or slow
 - 🔄 Early refresh. Refresh cached value before needing to serve it
 - 🗂️ Namespaces. Group your keys by categories.
 - 🛑 Cache stamped protection.
 - 🏷️ Named caches
-- 📖 Well documented + JSDoc annotations everywhere.
+- 📖 Well documented + handy JSDoc annotations
 - 📊 Events. Useful for monitoring and metrics
 - 🧩 Easily extendable with your own driver
 
 ## Why Bentocache ? 
 
-There are already caching libraries for Node: `keyv`, `cache-manager`, or `unstorage`. However, I think that we could rather consider these libraries as bridges that allow different stores to be used via a unified API, rather than true caching solutions as such.
+There are already caching libraries for Node: [`keyv`](https://keyv.org/), [`cache-manager`](https://github.com/node-cache-manager/node-cache-manager#readme), or [`unstorage`](https://unstorage.unjs.io/). However, I think that we could rather consider these libraries as bridges that allow different stores to be used via a unified API, rather than true caching solutions as such.
 
-Not to knock them, on the contrary, they have their use cases and cool. Some are even "marketed" as such and are still very handy. But yeah, they serve a different purpose.
+Not to knock them, on the contrary, they have their use cases and cool. Some are even "marketed" as such and are still very handy for simple caching system.
 
-Bentocache, on the other hand, is a **true caching solution for web applications**. We indeed have this notion of unified access to differents drivers, but in addition to that, we have a ton of features that will allow you to do serious and robust caching.
+Bentocache, on the other hand, is a **full-featured caching library**. We indeed have this notion of unified access to differents drivers, but in addition to that, we have a ton of features that will allow you to do robust caching.
 
-If we start from this principle, then I believe there is simply no serious alternative to Bentocache in the JavaScript ecosystem. Which is regrettable, because in all other languages there are robust caching libraries. This is why Bentocache was created.
+With that in mind, then I believe there is no serious alternative to Bentocache in the JavaScript ecosystem. Which is regrettable, because all other languages have powerful solutions. This is why Bentocache was created.
 
 ## Quick presentation
 
@@ -34,7 +38,7 @@ The one-level mode is a standard caching method. Choose from a variety of driver
 
 In addition to this, you benefit from many features that allow you to efficiently manage your cache, such as **cache stampede protection**, **grace periods**, **timeouts**, **namespaces**, etc.
 
-### Hybrid
+### Two-levels
 For those looking to go further, you can use the Hybrid driver with his two-levels caching system. Here's basically how it works:
 
 - **Local Cache**: First level cache. Data is stored in memory with an LRU algorithm for quick access
@@ -57,7 +61,7 @@ Below is a list of the main features of BentoCache. If you want to know more, yo
 
 ### Multi layer caching
 
-Multi-layer caching allows you to combine the speed of in-memory caching with the persistence of a distributed cache. This is the best of both worlds.
+Multi-layer caching allows you to combine the speed of in-memory caching with the persistence of a distributed cache. Best of both worlds.
 
 ### Lot of drivers
 
@@ -72,11 +76,15 @@ Only a Redis driver for the bus is currently available. We probably have drivers
 
 ### Resiliency
 
-- [Grace period](./grace_period.md): Keep your application running smoothly with the ability to temporarily use expired cache entries when your distributed cache store is down, or when a factory is failing.
+- [Grace period](./grace_periods.md): Keep your application running smoothly with the ability to temporarily use expired cache entries when your database is down, or when a factory is failing.
 
 - [Cache stamped prevention](./stampede_protection.md): Ensuring that only one factory is executed at the same time.
 
-- [Retry queue](./hybrid.md#retry-queue) : When a application fails to publish something to the bus, it is added to a queue and retried later.
+- [Retry queue](./hybrid_driver.md#retry-queue-strategy) : When a application fails to publish something to the bus, it is added to a queue and retried later.
+
+### Timeouts 
+
+If your factory is taking too long to execute, you can just return a little bit of stale data while keeping the factory running in the background. Next time the entry is requested, it will be already computed and served immediately.
 
 ### Namespaces
 
@@ -101,21 +109,22 @@ bento.on('cache:miss', () => {})
 // ...
 ```
 
-See the [events documentation](./events.md) for more information.
+See the [events documentation](./digging_deeper/events.md) for more information.
 
 ### Friendly TTLs
 
 All TTLs can be passed in a human-readable string format. We use [lukeed/ms](https://github.com/lukeed/ms) under the hood. (this is optional, and you can pass a `number` in milliseconds if you prefer)
 
 ```ts
-bento.getOrSet('foo', '2.5h', () => getFromDb(), {
-  gracePeriod: { enabled: true, duration: '30d' }
+bento.getOrSet('foo', () => getFromDb(), {
+  ttl: '2.5h'
+  gracePeriod: { enabled: true, duration: '6h' }
 })
 ```
 
 ### Early refresh
 
-When you cached item will expire soon, you can refresh it in advance, in the background. This way, next time the entry is requested, it will already be computed and so returned to the user super quickly.
+When you cached item will expire soon, you can refresh it in advance, in the background. This way, next time the entry is requested, it will already be computed and thus returned to the user super quickly.
 
 ```ts
 bento.getOrSet('foo', () => getFromDb(), {
@@ -131,7 +140,7 @@ In this case, when only 20% or less of the TTL remains and the entry is requeste
 
 ### Logging
 
-You can pass a logger to Bentocache, and it will log everything that happens. This is useful for debugging, or to send logs to a monitoring tool.
+You can pass a logger to Bentocache, and it will log everything that happens. Can be useful for debugging or monitoring.
 
 ```ts
 import { pino } from 'pino'
@@ -139,10 +148,16 @@ import { pino } from 'pino'
 const bento = new BentoCache({
   logger: pino()
 })
-
 ```
 
-See the [logging documentation](./logging.md) for more information.
+See the [logging documentation](./digging_deeper/logging.md) for more information.
+
+## Sponsor
+
+If you like this project, [please consider supporting it by sponsoring it](https://github.com/sponsors/Julien-R44/). It will help a lot to maintain and improve it. Thanks a lot !
+
+
+
 
 ## Prior art and inspirations
 

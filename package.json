@@ -5,9 +5,8 @@
   "type": "module",
   "license": "UNLICENSED",
   "scripts": {
-    "export": "vite build && npm run download:sponsors && node --loader=ts-node/esm bin/build.ts",
-    "postexport": "copyfiles -u 1 public/* public/**/* dist",
-    "download:sponsors": "node --loader=ts-node/esm bin/download_sponsors.ts",
+    "export": "vite build && node --loader=ts-node/esm bin/build.ts && pnpm copy:files",
+    "copy:files": "copyfiles -u 1 public/* public/**/* dist",
     "start": "node bin/test.js",
     "serve": "node --loader=ts-node/esm bin/serve.ts",
     "dev": "concurrently \"vite\" \"npm run serve\"",
@@ -47,6 +46,8 @@
   "dependencies": {
     "@adonisjs/core": "^6.1.5-4",
     "@adonisjs/static": "^1.0.1",
-    "@adonisjs/view": "^7.0.0-2"
+    "@adonisjs/view": "^7.0.0-2",
+    "@ryangjchandler/alpine-tooltip": "^1.2.0",
+    "tippy.js": "^6.3.7"
   }
 }

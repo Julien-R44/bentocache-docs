@@ -2,18 +2,21 @@
   "links": {
     "home": {
       "title": "BentoCache",
-      "href": "/"
+      "href": "/docs/introduction"
     },
     "github": {
-      "title": "Your project on Github",
-      "href": "https://github.com/dimerapp"
+      "title": "BentoCache on GitHub",
+      "href": "https://github.com/Julien-R44/bentocache"
     }
   },
   "sponsors_sources": [
     "julien-r44"
   ],
   "search": {
+    "appId": "2XMML2O2ES",
+    "apiKey": "c66d8c1caefe3ba8895d676f9843da3b",
+    "indexName": "bentocache"
   },
-  "fileEditBaseUrl": "https://github.com/dimerapp/docs-boilerplate/blob/develop",
+  "fileEditBaseUrl": "https://github.com/Julien-R44/bentocache-docs/blob/main",
   "copyright": "BentoCache"
 }

@@ -1,3 +1,7 @@
+---
+summary: "Discover BentoCache named caches feature. Learn how to define multiple cache stores in your application and use them distinctly"
+---
+
 # Named Caches
 
 You can define several cache stores for your application and use them completely separately :
@@ -7,16 +11,22 @@ const bento = new BentoCache({
   default: 'memory',
   stores: {
     // One store named "memory" using the memory driver
-    memory: memoryDriver({ /* ... */ }),
+    memory: {
+      driver: memoryDriver({ /* ... */ })
+    }
 
     // One store named "hybrid" using the hybrid driver
-    hybrid: hybridDriver({
-      local: memoryDriver({ /* ... */ }),
-      remote: redisDriver({ /* ... */ })
-    }),
+    hybrid: {
+      driver: hybridDriver({
+        local: memoryDriver({ /* ... */ }),
+        remote: redisDriver({ /* ... */ })
+      }),
+    }
 
     // One store named "another" using the dynamodb driver
-    another: dynamodbDriver({ /* ... */ }),
+    another: {
+      driver: dynamodbDriver({ /* ... */ }),
+    }
   },
 })
 ```
@@ -51,13 +61,13 @@ In some cases, you may want to define two named caches that use the same backend
 const bento = new BentoCache({
   default: 'memory',
   stores: {
-    users: redisDriver({ prefix: 'users' }),
-    posts: redisDriver({ prefix: 'posts' }),
+    users: { driver: redisDriver({ prefix: 'users' }) }
+    posts: { driver: redisDriver({ prefix: 'posts' }) }
   },
 })
 ```
 
-Now, it will work as expected. There will be no collisions between the different keys, and when you use the `.clear()` function that allows you to delete all cache keys, you will only delete the keys of the store in question.
+Now, it will work as expected. There will be no collisions between the different keys, and when you use the `.clear()` function that allows you to delete all cache keys, you will only delete the keys of that specific store.
 
 ```ts
 bento.use('users').set('foo', '2')

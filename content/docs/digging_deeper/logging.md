@@ -1,3 +1,7 @@
+---
+summary: Bentocache logs a lot of information throughout its execution. Learn how to plug in your own logger.
+---
+
 # Logging
 
 In case you encounter any issues, or if you just want more visibility and information about what Bentocache is doing in production, you can plug in a custom logger when you create an instance of Bentocache.

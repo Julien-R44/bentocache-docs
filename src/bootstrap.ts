@@ -78,7 +78,7 @@ pipeline.use(docsHook).use((node) => {
  * Configuring renderer
  */
 export const renderer = new Renderer(view, pipeline)
-  .codeBlocksTheme('material-theme-palenight')
+  .codeBlocksTheme('github-dark-dimmed')
   .useTemplate('docs')
 
 /**

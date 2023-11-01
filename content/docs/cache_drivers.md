@@ -1,14 +1,21 @@
+---
+summary: The drivers available to use with BentoCache
+---
+
 # Cache drivers
 
 Some options are common to all drivers. For more information about them, see the [options](./options.md) page. Here we will rather list the specifics of each driver.
 
 ## Redis
 
+You will need to install `ioredis` to use this driver.
+
 The Redis driver can be used with many different providers:
 - Upstash
 - Vercel KV
 - DragonFly
 - Redis Cluster
+
 
 The driver uses the [ioredis](https://github.com/redis/ioredis) library under the hood. So all possible ioredis configurations are assignable when creating the bentocache driver. Feel free to look at their documentation for more details.
 
@@ -19,9 +26,11 @@ import { redisDriver } from 'bentocache/drivers/redis'
 const bento = new BentoCache({
   default: 'redis',
   stores: {
-    redis: redisDriver({ 
-      connection: { host: '127.0.0.1', port: 6379 } 
-    })
+    redis: {
+      driver: redisDriver({ 
+        connection: { host: '127.0.0.1', port: 6379 }
+      })
+    }
   }
 })
 ```
@@ -36,12 +45,16 @@ const ioredis = new Redis()
 const bento = new BentoCache({
   default: 'redis',
   stores: {
-    redis: redisDriver({ connection: ioredis })
+    redis: {
+      driver: redisDriver({ connection: ioredis })
+    }
   }
 })
 ```
 
-You will also need to install `ioredis` to use this driver.
+| Option | Description | Default |
+| --- | --- | --- |
+| `connection` | The connection options to use to connect to Redis or an instance of `ioredis` | N/A |
 
 ## Filesystem
 
@@ -54,14 +67,23 @@ import { fileDriver } from 'bentocache/drivers/filesystem'
 const bento = new BentoCache({
   default: 'file',
   stores: {
-    file: fileDriver({ directory: 'cache' })
+    file: {
+      driver: fileDriver({ directory: 'cache' })
+    }
   }
 })
 ```
 
+| Option | Description | Default |
+| --- | --- | --- |
+| `directory` | The directory where the cache files will be stored. | N/A |
+
 ## Memory
 
-The memory driver will store your cache directly in memory with an [LRU cache algorithm](https://github.com/sindresorhus/quick-lru).
+The memory driver will store your cache directly in memory.
+
+Use [node-lru-cache](https://github.com/isaacs/node-lru-cache) under the hood.
+
 
 ```ts
 import { BentoCache } from 'bentocache'
@@ -70,14 +92,21 @@ import { memoryDriver } from 'bentocache/drivers/memory'
 const bento = new BentoCache({
   default: 'memory',
   stores: {
-    memory: memoryDriver({ 
-      maxSize: 1000,
-    })
+    memory: {
+      driver: memoryDriver({ 
+        maxItems: 1000,
+        maxSize: 1024,
+      })
+    }
   }
 })
 ```
 
-`maxSize` is the maximum number of entries that the cache can contain. If the cache is full, the least used entries will be deleted to make room for new entries.
+| Option | Description | Default |
+| --- | --- | --- |
+| `maxSize` | The maximum size of the cache **in bytes**. | N/A |
+| `maxItems` | The maximum number of entries that the cache can contain. Note that fewer items may be stored if you are also using `maxSize` and the cache is full. | N/A |
+| `maxEntrySize` | The maximum size of a single entry in bytes. | N/A |
 
 ## DynamoDB
 
@@ -88,24 +117,34 @@ import { BentoCache } from 'bentocache'
 import { dynamoDbDriver } from 'bentocache/drivers/dynamodb'
 
 const bento = new BentoCache({
-  default: 'memory',
+  default: 'dynamo',
   stores: {
-    memory: dynamoDbDriver({ 
-      endpoint: '...',
-      region: 'eu-west-3',
-      table: {
-        name: 'cache' // Name of the table
-      },
-      credentials: {
-        accessKeyId: '...',
-        secretAccessKey: '...',
-      },
-    })
+    dynamo: {
+      driver: dynamoDbDriver({ 
+        endpoint: '...',
+        region: 'eu-west-3',
+        table: {
+          name: 'cache' // Name of the table
+        },
+        credentials: {
+          accessKeyId: '...',
+          secretAccessKey: '...',
+        },
+      })
+    }
   }
 })
 ```
 
 You will also need to create a DynamoDB table with a string partition key named `key`. You must create this table before starting to use the driver.
+
+| Option | Description | Default |
+| --- | --- | --- |
+| `table.name` | The name of the table that will be used to store the cache. | `cache` |
+| `credentials` | The credentials to use to connect to DynamoDB. | N/A |
+| `endpoint` | The endpoint to use to connect to DynamoDB. | N/A |
+| `region` | The region to use to connect to DynamoDB. | N/A |
+
 
 :::warning
 Be careful with the `.clear()` function of the DynamoDB driver. We do not recommend using it. Dynamo does not offer a "native" `clear`, so we are forced to make several API calls to: retrieve the keys and delete them, 25 by 25 (max per `BatchWriteItemCommand`).
@@ -113,19 +152,17 @@ Be careful with the `.clear()` function of the DynamoDB driver. We do not recomm
 So using this function can be costly, both in terms of execution time and API request cost. And also pose rate-limiting problems. Use at your own risk.
 :::
 
-## Cloudflare KV
-
-Keep or not?
-
 ## Databases
 
 We offer several drivers to use a database as a cache. Under the hood, we use [Knex](https://knexjs.org/). So all Knex options are available, feel free to check out the documentation.
 
 All SQL drivers accept the following options:
 
-- `connection`: Knex connection options. Or you can directly pass your own Knex instance to reuse an existing connection.
-- `autoCreateTable`: If the cache table should be automatically created if it does not exist. Defaults to `true`.
-- `tableName`: the name of the table that will be used to store the cache. Default is `bentocache`.
+| Option | Description | Default |
+| --- | --- | --- |
+| `tableName` | The name of the table that will be used to store the cache. | `bentocache` |
+| `autoCreateTable` | If the cache table should be automatically created if it does not exist. | `true` |
+| `connection` | The connection options to use to connect to the database or an instance of `knex`. | N/A |
 
 ### PostgreSQL
 
@@ -136,16 +173,18 @@ import { BentoCache } from 'bentocache'
 import { postgresDriver } from 'bentocache/drivers/postgres'
 
 const bento = new BentoCache({
-  default: 'mysql',
+  default: 'pg',
   stores: {
-    mysql: postgresDriver({ 
-      connection: { 
-        user: 'root', 
-        password: 'root', 
-        database: 'postgres', 
-        port: 5432 
-      },
-    })
+    pg: {
+      driver: postgresDriver({ 
+        connection: { 
+          user: 'root', 
+          password: 'root', 
+          database: 'postgres', 
+          port: 5432 
+        },
+      })
+    }
   }
 })
 ```
@@ -161,14 +200,16 @@ import { mysqlDriver } from 'bentocache/drivers/mysql'
 const bento = new BentoCache({
   default: 'mysql',
   stores: {
-    mysql: mysqlDriver({ 
-      connection: { 
-        user: 'root', 
-        password: 'root', 
-        database: 'mysql', 
-        port: 3306
-      },
-    })
+    mysql: {
+      driver: mysqlDriver({ 
+        connection: { 
+          user: 'root', 
+          password: 'root', 
+          database: 'mysql', 
+          port: 3306
+        },
+      })
+    }
   }
 })
 ```
@@ -182,11 +223,13 @@ import { BentoCache } from 'bentocache'
 import { sqliteDriver } from 'bentocache/drivers/sqlite'
 
 const bento = new BentoCache({
-  default: 'mysql',
+  default: 'sqlite',
   stores: {
-    mysql: sqliteDriver({ 
-      connection: { filename: 'cache.sqlite3' },
-    })
+    sqlite: {
+      driver: sqliteDriver({ 
+        connection: { filename: 'cache.sqlite3' },
+      })
+    }
   }
 })
 ```

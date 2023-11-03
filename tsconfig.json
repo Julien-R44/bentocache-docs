@@ -23,7 +23,7 @@
     "strictFunctionTypes": true,
     "noImplicitThis": true,
     "skipLibCheck": true,
-    "types": ["@types/node", "@adonisjs/view"]
+    "types": ["@types/node"]
   },
   "include": ["./**/*"],
   "exclude": ["./node_modules", "./build"],

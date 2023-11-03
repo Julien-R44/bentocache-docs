@@ -1,7 +1,6 @@
-@layout('layouts/main')
-@set('siteConfig', await getConfig())
+@component('layouts/main', { file })
+  @let(siteConfig = await getConfig())
 
-@section('body')
   @component('docs::header', siteConfig)
     @slot('logo')
       @include('partials/logo')
@@ -30,7 +29,7 @@
       @end
 
       @if(file.toc)
-        @component('docs::toc')
+        @component('docs::toc', {})
           @!component('dimer_element', { node: file.toc, pipeline })~
         @end
       @end

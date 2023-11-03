@@ -10,8 +10,8 @@
 */
 
 import 'reflect-metadata'
-import { cp } from 'node:fs/promises'
 import { Ignitor } from '@adonisjs/core'
+import { defineConfig } from '@adonisjs/vite'
 
 /**
  * URL to the application root. AdonisJS need it to resolve
@@ -48,8 +48,6 @@ async function exportHTML() {
       }
     }
   }
-
-  // await cp(app.makePath('_redirects'), app.makePath('dist/_redirects'))
 }
 
 const app = new Ignitor(APP_ROOT, { importer: IMPORTER })
@@ -69,9 +67,7 @@ const app = new Ignitor(APP_ROOT, { importer: IMPORTER })
             },
           },
         },
-        views: {
-          cache: false,
-        }
+        vite: defineConfig({}),
       })
     })
   })

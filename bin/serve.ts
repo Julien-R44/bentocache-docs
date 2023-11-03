@@ -11,6 +11,7 @@
 
 import 'reflect-metadata'
 import { Ignitor } from '@adonisjs/core'
+import { defineConfig } from '@adonisjs/vite'
 
 /**
  * URL to the application root. AdonisJS need it to resolve
@@ -43,6 +44,7 @@ async function defineRoutes() {
     for (let collection of collections) {
       await collection.refresh()
       const entry = collection.findByPermalink(request.url())
+
       if (entry) {
         return entry.render({ collection, entry })
       }
@@ -75,9 +77,7 @@ new Ignitor(APP_ROOT, { importer: IMPORTER })
             },
           },
         },
-        views: {
-          cache: false,
-        }
+        vite: defineConfig({}),
       })
     })
 

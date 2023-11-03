@@ -4,9 +4,9 @@ summary: The list of options available to configure BentoCache
 
 # Options
 
-Here at the different possible options of BentoCache. Some of them are configurable, either **globally**, at the **driver level** or at **operation level** ( when calling core methods like `getOrSet`, `get`, etc. ).
+Here at the different possible options of BentoCache. Some of them are configurable, either **globally**, at the **store level** or at **operation level** ( when calling core methods like `getOrSet`, `get`, etc. ).
 
-Order of precedence is as follows: **1. Operation level > 2. Driver level > 3. Global level.**
+Order of precedence is as follows: **1. Operation level > 2. Store level > 3. Global level.**
 
 ```ts
 // title: Options levels
@@ -22,17 +22,16 @@ const bentocache = new BentoCache({
   },
 
   stores: {
-    memory: {
-      driver: memoryDriver({ maxSize: 1_000 })
-      // Driver level 👇
+    memory: bentostore({
+      // Store level 👇
       ttl: '30m',
       gracePeriod: { enabled: false }
-    }
+    })
   }
 })
 
-// Operation level 👇
 bentocache.getOrSet('key', () => fetchFromDb(), {
+  // Operation level 👇
   ttl: '1h',
   gracePeriod: { enabled: true }
 })
@@ -52,7 +51,7 @@ Quick note about TTLs and durations. Everywhere you are asked to provide a TTL o
 
 Default: `undefined`
 
-Levels: `global`, `driver`
+Levels: `global`, `store`
 
 This prefix will be added in front of all your cache keys. This can be useful, for example, in the case where you share a Redis with another application. Particularly when you need to call `.clear()`. Without a prefix, all keys will be deleted, even those not added by your application.
 
@@ -60,7 +59,7 @@ This prefix will be added in front of all your cache keys. This can be useful, f
 
 Default: `30s`
 
-Levels: `global`, `driver`, `operation`
+Levels: `global`, `store`, `operation`
 
 The TTL of the item to cache. See [TTL formats](#ttl-formats).
 
@@ -68,7 +67,7 @@ The TTL of the item to cache. See [TTL formats](#ttl-formats).
 
 Default: `false`
 
-Levels: `global`, `driver`, `operation`
+Levels: `global`, `store`, `operation`
 
 If `false`, then errors thrown by your L2 cache will be rethrown, and you will have to handle them yourself. Otherwise, they will just be ignored.
 
@@ -78,7 +77,7 @@ Note that in some cases, like when you use [Grace Periods](./grace_periods.md), 
 
 Default: `undefined`
 
-Levels: `global`, `driver`, `operation`
+Levels: `global`, `store`, `operation`
 
 Percentage of the TTL (between 0 and 1) that corresponds to the moment from which bentocache should launch a background refresh of your key. For example, if your TTL is `10m`, and your `earlyExpiration` is `0.8`, then a background refresh will be launched when the key is requested and there is less than 2 minutes of TTL remaining.
 
@@ -86,7 +85,7 @@ Percentage of the TTL (between 0 and 1) that corresponds to the moment from whic
 
 Default `undefined`
 
-Levels: `global`, `driver`, `operation`
+Levels: `global`, `store`, `operation`
 
 An object to configure the [grace period](./grace_periods.md):
 ```ts
@@ -100,7 +99,7 @@ An object to configure the [grace period](./grace_periods.md):
 ### `timeouts`
 
 Default: `undefined`
-Levels: `global`, `driver`, `operation`
+Levels: `global`, `store`, `operation`
 
 An object to configure the [timeouts](./timeouts.md)
 
@@ -120,7 +119,7 @@ Basically, when invoking a factory :
 
 Default: `undefined`
 
-Levels: `global`, `operation`
+Levels: `global`, `store`, `operation`
 
 The maximum amount of time (in milliseconds) that the in-memory lock for [stampeded protection](./stampede_protection.md) can be held. If the lock is not released before this timeout, it will be released automatically. 
 
@@ -130,7 +129,7 @@ This is usually not needed, but can provide an extra layer of protection against
 
 Default: `undefined`.
 
-Levels: `global`, `driver`
+Levels: `global`
 
 Only configurable at the BentoCache level.
 
@@ -139,6 +138,8 @@ See [logger](./digging_deeper/logging.md) for more details.
 ### `emitter`
 
 Default: `new EventEmitter()`.
+
+Levels: `global`
 
 Only configurable at the BentoCache level.
 

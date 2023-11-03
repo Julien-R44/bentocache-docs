@@ -1,63 +1,58 @@
 ---
-summary: "Discover the Hybrid Driver: a multi-tier caching solution that combines in-memory and distributed caches for optimal performance."
+summary: "Discover how to use multi-tier Caching with Bentocache: combines in-memory and distributed caches for optimal performance."
 ---
 
-# Hybrid Driver
+# Multi Tier
 
-The hybrid driver is a special driver that allows you to have a multi-tier cache. It is very useful when you want to boost even more the performance of your caching system. 
+A multi-tier caching system can be very useful when you want to boost even more the performance of you caching strategy. 
 
 To do that, we generally use a in-memory cache as the first level cache, and a distributed cache as the second level cache. In-memory cache is really fast, but it is limited by the amount of memory available on your server. Distributed cache is slower, but can store a lot more data, and is shared between your different instances.
 
-So by using a hybrid cache, you can have the best of both worlds. Here is a simplified diagram of the flow :
+So by using a multi-tier cache, you can have the best of both worlds. Here is a simplified diagram of the flow :
 
-![Bentocache hybrid](content/docs/hybrid-flow.png)
+![Bentocache Flow](content/docs/bentocache-flow.png)
 
 ## Setup
 
-We need to define 3 things to setup the hybrid driver :
+To create a multi-tier cache with Bentocache, just combine `useL1Layer()` and `useL2Layer()` methods when creating your cache instance. You can also use `useBus()` to add a bus to synchronize the different in-memory caches between the different instances of your application.
+
+:::note
+If your application is running on a single instance, you don't need to bother with the bus. Just use `useL1Layer()` and `useL2Layer()`.
+:::
 
 ```ts
-import { BentoCache } from 'bentocache'
+import { BentoCache, bentostore } from 'bentocache'
 import { memoryDriver } from 'bentocache/drivers/memory'
-import { redisDriver } from 'bentocache/drivers/redis'
+import { redisDriver, redisBusDriver } from 'bentocache/drivers/redis'
 
+const redisConnection = { host: 'localhost', port: 6379 }
 const bento = new BentoCache({
-  default: 'hybrid',
+  default: 'multitier',
 
   stores: {
-    hybrid: {
-      driver: {
-        driver: hybridDriver({
-          // A L1 cache
-          local: memoryDriver({ maxSize: 10_000 }),
-
-          // A L2 cache with Redis
-          remote: redisDriver({
-            connection: { host: '127.0.0.1', port: 6379 },
-          }),
-
-          // A bus to synchronize the L1 caches between 
-          // the different instances
-          bus: redisBusDriver({
-            connection: { host: '127.0.0.1', port: 6379 },
-          }),
-        }),
-      },
-    }
-  },
+    multitier: bentostore()
+      // Your L1 Cache. Here, an in-memory cache with 
+      // a maximum size of 10Mb
+      .useL1Layer(memoryDriver({ maxSize: 10 * 1024 * 1024 }))
+      // Your L2 Cache. Here, a Redis cache
+      .useL2Layer(redisDriver({ connection: redisConnection }))
+      // Finally, the bus to synchronize the L1 caches between
+      // the different instances of your application
+      .useBus(redisBusDriver({ connection: redisConnection })),
+  }
 })
 ```
 
-We have defined a hybrid cache with :
-- An in-memory cache with a maximum size of 10 000 items (after that, the oldest items will be dropped)
-- A distributed cache using Redis
-- A Redis bus to synchronize the in-memory caches between the different instances of your application
+So here, We have defined a multi-tier cache with :
+- L1: An in-memory cache with a maximum size of 10Mb. After that, the LRU algorithm will be used to remove the least recently used items.
+- L2: A distributed cache using Redis.
+- And a Redis bus to synchronize the in-memory caches between the different instances of your application. The redis bus leverage Redis Pub/Sub system to send messages between instances.
 
 Then, usage is the same as any other cache driver. You can use every method you would use on a normal cache driver. Synchronization between instances, writing to the different caches, etc. everything is handled internally by Bentocache.
 
 ## Bus
 
-The bus play a crucial role in the hybrid driver. It is used to synchronize the different in-memory caches between the different instances of your application.
+The bus play a crucial role in a multi-tier cache context. It is used to synchronize the different in-memory caches between the different instances of your application.
 
 Let's try to understand why we need it in the first place. We have an applications with 2 instances running in parallel with PM2.
 

@@ -26,11 +26,9 @@ import { redisDriver } from 'bentocache/drivers/redis'
 const bento = new BentoCache({
   default: 'redis',
   stores: {
-    redis: {
-      driver: redisDriver({ 
-        connection: { host: '127.0.0.1', port: 6379 }
-      })
-    }
+    redis: bentostore().useL2Layer(redisDriver({
+      connection: { host: '127.0.0.1', port: 6379 }
+    }))
   }
 })
 ```
@@ -45,9 +43,9 @@ const ioredis = new Redis()
 const bento = new BentoCache({
   default: 'redis',
   stores: {
-    redis: {
-      driver: redisDriver({ connection: ioredis })
-    }
+    redis: bentostore().useL2Layer(redisDriver({
+      connection: ioredis
+    }))
   }
 })
 ```
@@ -67,9 +65,9 @@ import { fileDriver } from 'bentocache/drivers/filesystem'
 const bento = new BentoCache({
   default: 'file',
   stores: {
-    file: {
-      driver: fileDriver({ directory: 'cache' })
-    }
+    redis: bentostore().useL2Layer(fileDriver({
+      directory: './cache'
+    }))
   }
 })
 ```
@@ -92,12 +90,10 @@ import { memoryDriver } from 'bentocache/drivers/memory'
 const bento = new BentoCache({
   default: 'memory',
   stores: {
-    memory: {
-      driver: memoryDriver({ 
-        maxItems: 1000,
-        maxSize: 1024,
-      })
-    }
+    memory: bentoStore().useL1Layer(memoryDriver({
+      maxSize: 10 * 1024 * 1024
+      maxItems: 1000
+    }))
   }
 })
 ```
@@ -119,19 +115,19 @@ import { dynamoDbDriver } from 'bentocache/drivers/dynamodb'
 const bento = new BentoCache({
   default: 'dynamo',
   stores: {
-    dynamo: {
-      driver: dynamoDbDriver({ 
-        endpoint: '...',
-        region: 'eu-west-3',
-        table: {
-          name: 'cache' // Name of the table
-        },
-        credentials: {
-          accessKeyId: '...',
-          secretAccessKey: '...',
-        },
-      })
-    }
+    dynamo: bentostore().useL2Layer(dynamoDbDriver({
+      endpoint: '...',
+      region: 'eu-west-3',
+      table: {
+        name: 'cache' // Name of the table
+      },
+
+      // Credentials to use to connect to DynamoDB
+      credentials: {
+        accessKeyId: '...',
+        secretAccessKey: '...'
+      }
+    }))
   }
 })
 ```
@@ -175,16 +171,14 @@ import { postgresDriver } from 'bentocache/drivers/postgres'
 const bento = new BentoCache({
   default: 'pg',
   stores: {
-    pg: {
-      driver: postgresDriver({ 
-        connection: { 
-          user: 'root', 
-          password: 'root', 
-          database: 'postgres', 
-          port: 5432 
-        },
-      })
-    }
+    pg: bentostore().useL2Layer(postgresDriver({
+      connection: { 
+        user: 'root', 
+        password: 'root', 
+        database: 'postgres', 
+        port: 5432 
+      }
+    }))
   }
 })
 ```
@@ -200,16 +194,14 @@ import { mysqlDriver } from 'bentocache/drivers/mysql'
 const bento = new BentoCache({
   default: 'mysql',
   stores: {
-    mysql: {
-      driver: mysqlDriver({ 
-        connection: { 
-          user: 'root', 
-          password: 'root', 
-          database: 'mysql', 
-          port: 3306
-        },
-      })
-    }
+    mysql: bentostore().useL2Layer(mysqlDriver({
+      connection: { 
+        user: 'root', 
+        password: 'root', 
+        database: 'mysql', 
+        port: 3306
+      },
+    }))
   }
 })
 ```
@@ -225,11 +217,9 @@ import { sqliteDriver } from 'bentocache/drivers/sqlite'
 const bento = new BentoCache({
   default: 'sqlite',
   stores: {
-    sqlite: {
-      driver: sqliteDriver({ 
-        connection: { filename: 'cache.sqlite3' },
-      })
-    }
+    sqlite: bentostore().useL2Layer(sqliteDriver({
+      connection: { filename: 'cache.sqlite3' },
+    }))
   }
 })
 ```

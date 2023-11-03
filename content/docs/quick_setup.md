@@ -34,30 +34,24 @@ yarn add bentocache
 Once installed, you can configure BentoCache in your application as follows:
 
 ```ts
-import { BentoCache } from 'bentocache'
+import { BentoCache, bentostore } from 'bentocache'
 import { memoryDriver } from 'bentocache/drivers/memory'
 import { redisDriver } from 'bentocache/drivers/redis'
 
 const bento = new BentoCache({
   default: 'myCache',
   stores: {
-    myCache: {
-      ttl: '2h'
-      driver: memoryDriver({
-        maxSize: 10_000,
-      }),
-    },
+    // A first cache store named "myCache" using only L1 in-memory cache
+    myCache: bentostore()
+      .useL1Layer(memoryDriver({ maxSize: 10_000 }))
 
-    redis: {
-      prefix: 'my-app',
-      ttl: '6h',
-      driver: redisDriver({
-        connection: {
-          host: '127.0.0.1',
-          port: 6379
-        }
-      })
-    }
+    // A second cache store named "multitier" using
+    // a in-memory cache as L1 and a Redis cache as L2
+    multitier: bentostore()
+      .useL1Layer(memoryDriver({ maxSize: 10_000 }))
+      .useL2Layer(redisDriver({
+        connection: { host: '127.0.0.1', port: 6379 }
+      }))
   }
 })
 ```
@@ -66,27 +60,23 @@ const bento = new BentoCache({
 - Bentocache supports named stores. This means that in a single application you can have multiple cache stores. You must define one by default. This is the one that will be used when you call methods directly from the bento object like `bento.get(...)`.
 - To use a store other than the default one, you will need to explicitly access it via `bento.use(cacheName)`.
 
+See [the documentation on named caches](./named_caches.md) for more information.
 
-## Hybrid setup
+## Multi-tier setup
 
 ```ts
-import { BentoCache } from 'bentocache'
+import { BentoCache, bentostore } from 'bentocache'
 import { memoryDriver } from 'bentocache/drivers/memory'
 import { redisDriver } from 'bentocache/drivers/redis'
 
 const bento = new BentoCache({
-  default: 'hybrid',
+  default: 'cache',
 
   stores: {
-    hybrid: {
-      driver: hybridDriver({
-        local: memoryDriver({/* ... */}),
-        remote: redisDriver({/* ... */}),
-        bus: redisBus({
-          connection: { host: '127.0.0.1', port: 6379 },
-        }),
-      }),
-    },
+    cache: bentostore()
+      .useL1Layer(memoryDriver({ maxSize: 10_000 }))
+      .useL2Layer(redisDriver({ /* ... */ }))
+      .useBus(redisBusDriver({ /* ... */ }))
   },
 })
 
@@ -94,11 +84,13 @@ await bento.set('user:42', { name: 'jul' })
 console.log(await bento.get('user:42'))
 ```
 
-With this setup, your in-memory cache will serve as the first level cache. If an item is stored in the in-memory cache, Bentocache will not fetch it from Redis, allowing for huge speed gains.
+With this setup, your in-memory cache will serve as the first level ( L1 ) cache. If an item is stored in the in-memory cache, Bentocache will not fetch it from Redis, allowing for huge speed gains.
 
-In a multi-instance application, your different in-memory caches will be synchronized using the bus you have configured.
+In a multi-instance application, your different in-memory caches will be synchronized using the bus you have configured. This way, if an instance updates an item in the cache, the other instances will be notified and will update their local cache.
 
-More information on the [hybrid driver here](./hybrid_driver.md)
+If you are running your application on a single instance, you don't need to bother with the bus. 
+
+More information on the [multi-tier here](./multi_tier.md)
 
 ## Next steps
 
@@ -165,4 +157,4 @@ export default class UsersController {
 ```
 
 As simple as that, we just need to call the `delete` method on the namespace, passing the key we want to delete. 
-Note that if you are using the hybrid driver, the `delete` call will notify the other instances to delete the key from their local cache as well.
+Note that if you are using a multi-tier setup, the `delete` call will notify the other instances to delete the key from their local cache as well.

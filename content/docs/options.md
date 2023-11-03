@@ -70,7 +70,7 @@ Default: `false`
 
 Levels: `global`, `driver`, `operation`
 
-In hybrid mode, if `false`, then errors thrown by your remote cache will be rethrown, and you will have to handle them yourself. Otherwise, they will just be ignored.
+If `false`, then errors thrown by your L2 cache will be rethrown, and you will have to handle them yourself. Otherwise, they will just be ignored.
 
 Note that in some cases, like when you use [Grace Periods](./grace_periods.md), errors will not be thrown, even if this option is set to `false`. Since this is the whole point of grace periods.
 

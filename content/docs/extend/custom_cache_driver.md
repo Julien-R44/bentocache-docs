@@ -88,11 +88,8 @@ import { Bentocache } from 'bentocache'
 const cache = new Bentocache({
   default: 'myStore',
   stores: {
-    myStore: {
-      driver: myDriver({
-        // Your driver options
-      })
-    }
+    myStore: bentostore()
+      .useL2Layer(myDriver({ /* Your driver options */ }))
   }
 })
 ```

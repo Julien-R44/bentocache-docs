@@ -47,7 +47,7 @@ const bento = new BentoCache({
   // highlight-end
   default: 'memory',
   stores: {
-    memory: { driver: memoryDriver() }
+    memory: bentostore().useL1Layer(memoryDriver()),
   },
 })
 ```

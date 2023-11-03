@@ -30,9 +30,9 @@
     "category": "Guides"
   },
   {
-    "permalink": "hybrid-driver",
-    "title": "Hybrid Driver",
-    "contentPath": "./hybrid_driver.md",
+    "permalink": "multi-tier",
+    "title": "Multi-Tier",
+    "contentPath": "./multi_tier.md",
     "category": "Guides"
   },
   {

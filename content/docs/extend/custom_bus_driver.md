@@ -41,4 +41,4 @@ It should disconnect from the bus.
 
 ### onReconnect
 
-In case of a disconnection, the callback passed to this method should be called when the connection is re-established. It will allow BentoCache to process the [retry queue](../hybrid_driver.md#retry-queue-strategy)
+In case of a disconnection, the callback passed to this method should be called when the connection is re-established. It will allow BentoCache to process the [retry queue](../multi_tier.md#retry-queue-strategy)

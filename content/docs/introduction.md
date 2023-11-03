@@ -39,21 +39,36 @@ The one-level mode is a standard caching method. Choose from a variety of driver
 In addition to this, you benefit from many features that allow you to efficiently manage your cache, such as **cache stampede protection**, **grace periods**, **timeouts**, **namespaces**, etc.
 
 ### Two-levels
-For those looking to go further, you can use the Hybrid driver with his two-levels caching system. Here's basically how it works:
+For those looking to go further, you can use the two-levels caching system. Here's basically how it works:
 
-- **Local Cache**: First level cache. Data is stored in memory with an LRU algorithm for quick access
-- **Distributed Cache**: If the data is not in the in-memory cache, it is searched in the distributed cache (Redis, for example)
+- **L1: Local Cache**: First level cache. Data is stored in memory with an LRU algorithm for quick access
+- **L2: Distributed Cache**: If the data is not in the in-memory cache, it is searched in the distributed cache (Redis, for example)
 - **Synchronization via Bus**: In a multi-instance context, you can synchronize different local in-memory caches of your instances via a Bus like Redis or RabbitMQ. This method maintains cache integrity across multiple instances
 
 Here is a simplified diagram of the flow :
 
-![Bentocache hybrid](content/docs/hybrid-flow.png)
+![Bentocache Diagram flow](content/docs/bentocache-flow.png)
 
 All of this is managed invisibly for you via Bentocache. The only thing to do is to set up a bus in your infrastructure. But if you need multi-level cache, you're probably already using Redis rather than your database as a distributed cache. So you can leverage it to synchronize your local caches
 
-The major benefit of hybrid mode is that it allows for responses between 2,000x and 5,000x faster. While Redis is fast, accessing RAM is REALLY MUCH faster.
+The major benefit of multi-tier caching is that it allows for responses between 2,000x and 5,000x faster. While Redis is fast, accessing RAM is REALLY MUCH faster.
 
-It's a quite common pattern in the business world, and to quote an example, it's what Stackoverflow does, for example. I invite you to read [this article](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/#layers-of-cache-at-stack-overflow) on the same subject, which is very interesting.
+In fact, it's a quite common pattern : to quote an example, it's [what Stackoverflow does](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/#layers-of-cache-at-stack-overflow). 
+
+
+To give some perspective, here's a simple benchmark that shows the difference between a simple distributed cache ( using Redis ) vs a multi-tier cache ( using Redis + In-memory cache ) :
+
+```ts
+// title: Benchmarked code
+benchmark
+  .add('BentoCache', () => await bentocache.get('key'))
+  .add('ioredis', () => await ioredis.get('key'))
+```
+
+![Redis vs Multi-tier caching](./redis_vs_mtier.png) 
+
+So a pretty huge difference.
+
 
 ## Features
 
@@ -80,7 +95,7 @@ Only a Redis driver for the bus is currently available. We probably have drivers
 
 - [Cache stamped prevention](./stampede_protection.md): Ensuring that only one factory is executed at the same time.
 
-- [Retry queue](./hybrid_driver.md#retry-queue-strategy) : When a application fails to publish something to the bus, it is added to a queue and retried later.
+- [Retry queue](./multi_tier.md#retry-queue-strategy) : When a application fails to publish something to the bus, it is added to a queue and retried later.
 
 ### Timeouts 
 

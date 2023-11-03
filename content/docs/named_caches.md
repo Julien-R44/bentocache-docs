@@ -10,23 +10,19 @@ You can define several cache stores for your application and use them completely
 const bento = new BentoCache({
   default: 'memory',
   stores: {
-    // One store named "memory" using the memory driver
-    memory: {
-      driver: memoryDriver({ /* ... */ })
-    }
+    // One store named "memory". Only L1 in-memory cache
+    memory: bentostore()
+      .useL1Layer(memoryDriver({ maxSize: 10 * 1024 * 1024 })),
 
-    // One store named "hybrid" using the hybrid driver
-    hybrid: {
-      driver: hybridDriver({
-        local: memoryDriver({ /* ... */ }),
-        remote: redisDriver({ /* ... */ })
-      }),
-    }
+    // One store named "multitier" using full multi-tier cache
+    multitier: bentostore()
+      .useL1Layer(memoryDriver({ maxSize: 10 * 1024 * 1024 }))
+      .useL2Layer(redisDriver({ connection: redisConnection }))
+      .useBus(redisBusDriver({ connection: redisConnection })),
 
-    // One store named "another" using the dynamodb driver
-    another: {
-      driver: dynamodbDriver({ /* ... */ }),
-    }
+    // One store named "dynamo" using the dynamodb driver
+    dynamo: bentostore()
+      .useL2Layer(dynamodbDriver({ /* ... */ })),
   },
 })
 ```
@@ -47,10 +43,10 @@ bento.delete('foo')
 And to access a specific store, use the `.use()` method with the name of the store :
 
 ```ts
-bento.use('hybrid').getOrSet('foo', () => getFromDb(42))
-bento.use('hybrid').set('foo', 'bar')
-bento.use('another').get('foo')
-bento.use('another').delete('foo')
+bento.use('multitier').getOrSet('foo', () => getFromDb(42))
+bento.use('multitier').set('foo', 'bar')
+bento.use('dynamo').get('foo')
+bento.use('dynamo').delete('foo')
 ```
 
 ## Separation of Stores
@@ -59,10 +55,13 @@ In some cases, you may want to define two named caches that use the same backend
 
 ```ts
 const bento = new BentoCache({
-  default: 'memory',
+  default: 'users',
   stores: {
-    users: { driver: redisDriver({ prefix: 'users' }) }
-    posts: { driver: redisDriver({ prefix: 'posts' }) }
+    users: bentostore()
+      .useL2Layer(redisDriver({ prefix: 'users' }))
+
+    posts: bentostore()
+      .useL2Layer(redisDriver({ prefix: 'posts' }))
   },
 })
 ```

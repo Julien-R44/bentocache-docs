@@ -40,7 +40,9 @@ Now, let's make the first easy step by adding a simple memory-cache to our app :
 // title: Memory Cache
 const bentoCache = new BentoCache({
   default: 'cache',
-  stores: { cache: { driver: memoryDriver() } }
+  stores: { 
+    cache: bentostore().useL1Layer(memoryDriver())
+  }
 })
 
 router.get('/products/:id', async (req, res) => {
@@ -118,7 +120,7 @@ Grace periods extend the time that cached data can be served even after their ex
 ```ts
 // title: Grace Period
 const bentoCache = new BentoCache({
-  default: 'redis',
+  default: 'cache',
   // highlight-start
   gracePeriod: {
     enabled: true,
@@ -126,12 +128,8 @@ const bentoCache = new BentoCache({
     fallbackDuration: '30s'
   }
   // highlight-end
-  stores: { 
-    redis: {
-      driver: redisDriver({ 
-        connection: process.env.REDIS_CREDENTIALS! 
-      })
-    }
+  stores: {
+    cache: bentostore().useL1Layer(memoryDriver()) 
   }
 })
 
@@ -187,29 +185,22 @@ Up until now, we've been working with a memory cache that has its own limitation
 - Instance `N1` receives a request for `product:42` and fetches the product from the database, caching it in memory.
 - Soon after, instance `N2` receives a request for the same `product:42`. Since it has its separate memory-cache, it won't find the product and will have to retrieve it from the database again.
 
-See the problem ? Let's introduce our Multi-cache level setup with the hybrid driver :
+See the problem ? Let's introduce our Multi-Tier cache setup :
 
 ```ts
 // title: Hybrid driver
 const bentoCache = new BentoCache({
-  default: 'hybrid',
+  default: 'cache',
   gracePeriod: { 
     enabled: true, 
     duration: '6h', 
     fallbackDuration: '30s' 
   }
   stores: { 
-    hybrid: {
-      driver: hybridDriver({
-        local: memoryDriver(),
-        remote: redisDriver({ 
-          connection: process.env.REDIS_CREDENTIALS! 
-        }),
-        bus: redisBus({ 
-          connection: process.env.REDIS_CREDENTIALS! 
-        }),
-      })
-    }
+    cache: bentostore()
+      .useL1Layer(memoryDriver())
+      .useL2Layer(redisDriver({ connection: process.env.REDIS_CREDENTIALS! }))
+      .useBus(redisBusDriver({ connection: process.env.REDIS_CREDENTIALS! }))
   },
 })
 
@@ -225,9 +216,9 @@ router.get('/products/:id', async (req, res) => {
 })
 ```
 
-Nice. We now have a robust two-level cache system. It also introduces a new concept: the Bus. Though we won't dive deep into it here, the bus serves as a mechanism to synchronize the various memory caches across instances, ensuring consistent state. More details can be found in the [hybrid driver documentation](./hybrid_driver.md).
+Nice. We now have a robust two-level cache system. It also introduces a new concept: the Bus. Though we won't dive deep into it here, the bus serves as a mechanism to synchronize the various memory caches across instances, ensuring consistent state. More details can be found in the [Multi-tier documentation](./multi_tier.md).
 
-Returning to our original problem of different instances redundantly fetching the same data from the database, let's estimate that this occurs 35% of the time. By utilizing a hybrid driver and bus, we can reduce database calls by this percentage.
+Returning to our original problem of different instances redundantly fetching the same data from the database, let's estimate that this occurs 35% of the time. By using a multi-tier cache and bus, we can reduce database calls by this percentage.
 
 - We previously calculated 39,000 requests in 10 minutes.
 - With the new setup, we have reduced this to 25,350 requests in 10 minutes (39,000 * 0.65).
@@ -244,7 +235,7 @@ However, it sometimes happens that the database's response time is prolonged, so
 ```ts
 // title: Soft timeouts
 const bentoCache = new BentoCache({
-  default: 'hybrid',
+  default: 'cache',
   gracePeriod: { 
     enabled: true, 
     duration: '6h', 
@@ -256,17 +247,10 @@ const bentoCache = new BentoCache({
   },
   // highlight-end
   stores: { 
-    hybrid: {
-      driver: hybridDriver({
-        local: memoryDriver(),
-        remote: redisDriver({ 
-          connection: process.env.REDIS_CREDENTIALS! 
-        }),
-        bus: redisBus({ 
-          connection: process.env.REDIS_CREDENTIALS! 
-        }),
-      })
-    }
+    cache: bentostore()
+      .useL1Layer(memoryDriver())
+      .useL2Layer(redisDriver({ connection: process.env.REDIS_CREDENTIALS! }))
+      .useBus(redisBusDriver({ connection: process.env.REDIS_CREDENTIALS! }))
   },
 })
 

@@ -189,6 +189,7 @@ See the problem ? Let's introduce our Multi-Tier cache setup :
 
 ```ts
 // title: Hybrid driver
+const connection = process.env.REDIS_CREDENTIALS!
 const bentoCache = new BentoCache({
   default: 'cache',
   gracePeriod: { 
@@ -199,8 +200,8 @@ const bentoCache = new BentoCache({
   stores: { 
     cache: bentostore()
       .useL1Layer(memoryDriver())
-      .useL2Layer(redisDriver({ connection: process.env.REDIS_CREDENTIALS! }))
-      .useBus(redisBusDriver({ connection: process.env.REDIS_CREDENTIALS! }))
+      .useL2Layer(redisDriver({ connection }))
+      .useBus(redisBusDriver({ connection }))
   },
 })
 
@@ -234,6 +235,7 @@ However, it sometimes happens that the database's response time is prolonged, so
 
 ```ts
 // title: Soft timeouts
+const connection = process.env.REDIS_CREDENTIALS!
 const bentoCache = new BentoCache({
   default: 'cache',
   gracePeriod: { 
@@ -249,8 +251,8 @@ const bentoCache = new BentoCache({
   stores: { 
     cache: bentostore()
       .useL1Layer(memoryDriver())
-      .useL2Layer(redisDriver({ connection: process.env.REDIS_CREDENTIALS! }))
-      .useBus(redisBusDriver({ connection: process.env.REDIS_CREDENTIALS! }))
+      .useL2Layer(redisDriver({ connection }))
+      .useBus(redisBusDriver({ connection }))
   },
 })
 

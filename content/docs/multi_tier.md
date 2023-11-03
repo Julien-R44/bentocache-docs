@@ -23,7 +23,7 @@ If your application is running on a single instance, you don't need to bother wi
 ```ts
 import { BentoCache, bentostore } from 'bentocache'
 import { memoryDriver } from 'bentocache/drivers/memory'
-import { redisDriver, redisBusDriver } from 'bentocache/drivers/redis'
+import { redisDriver,redisBusDriver } from 'bentocache/drivers/redis'
 
 const redisConnection = { host: 'localhost', port: 6379 }
 const bento = new BentoCache({

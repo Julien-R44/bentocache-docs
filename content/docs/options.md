@@ -63,7 +63,7 @@ Levels: `global`, `store`, `operation`
 
 The TTL of the item to cache. See [TTL formats](#ttl-formats).
 
-### `suppressRemoteCacheError`
+### `suppressL2Errors`
 
 Default: `false`
 

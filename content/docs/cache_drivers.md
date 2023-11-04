@@ -20,7 +20,7 @@ The Redis driver can be used with many different providers:
 The driver uses the [ioredis](https://github.com/redis/ioredis) library under the hood. So all possible ioredis configurations are assignable when creating the bentocache driver. Feel free to look at their documentation for more details.
 
 ```ts
-import { BentoCache } from 'bentocache'
+import { BentoCache, bentostore } from 'bentocache'
 import { redisDriver } from 'bentocache/drivers/redis'
 
 const bento = new BentoCache({
@@ -59,8 +59,8 @@ const bento = new BentoCache({
 The filesystem driver will store your cache in a distributed way in several files/folders on your filesystem.
 
 ```ts
-import { BentoCache } from 'bentocache'
-import { fileDriver } from 'bentocache/drivers/filesystem'
+import { BentoCache, bentostore } from 'bentocache'
+import { fileDriver } from "bentocache/drivers/file";
 
 const bento = new BentoCache({
   default: 'file',
@@ -84,14 +84,14 @@ Use [node-lru-cache](https://github.com/isaacs/node-lru-cache) under the hood.
 
 
 ```ts
-import { BentoCache } from 'bentocache'
+import { BentoCache, bentostore } from 'bentocache'
 import { memoryDriver } from 'bentocache/drivers/memory'
 
 const bento = new BentoCache({
   default: 'memory',
   stores: {
-    memory: bentoStore().useL1Layer(memoryDriver({
-      maxSize: 10 * 1024 * 1024
+    memory: bentostore().useL1Layer(memoryDriver({
+      maxSize: 10 * 1024 * 1024,
       maxItems: 1000
     }))
   }
@@ -109,7 +109,7 @@ const bento = new BentoCache({
 DynamoDB is also supported by bentocache. You will need to install `@aws-sdk/client-dynamodb` to use this driver.
 
 ```ts
-import { BentoCache } from 'bentocache'
+import { BentoCache, bentostore } from 'bentocache'
 import { dynamoDbDriver } from 'bentocache/drivers/dynamodb'
 
 const bento = new BentoCache({
@@ -165,7 +165,7 @@ All SQL drivers accept the following options:
 You will need to install `pg` to use this driver.
 
 ```ts
-import { BentoCache } from 'bentocache'
+import { BentoCache, bentostore } from 'bentocache'
 import { postgresDriver } from 'bentocache/drivers/postgres'
 
 const bento = new BentoCache({
@@ -188,7 +188,7 @@ const bento = new BentoCache({
 You will need to install `mysql2` to use this driver.
 
 ```ts
-import { BentoCache } from 'bentocache'
+import { BentoCache, bentostore } from 'bentocache'
 import { mysqlDriver } from 'bentocache/drivers/mysql'
 
 const bento = new BentoCache({
@@ -211,7 +211,7 @@ const bento = new BentoCache({
 You will need to install `better-sqlite3` to use this driver.
 
 ```ts
-import { BentoCache } from 'bentocache'
+import { BentoCache, bentostore } from 'bentocache'
 import { sqliteDriver } from 'bentocache/drivers/sqlite'
 
 const bento = new BentoCache({

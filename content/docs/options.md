@@ -11,7 +11,7 @@ Order of precedence is as follows: **1. Operation level > 2. Store level > 3. Gl
 ```ts
 // title: Options levels
 const bentocache = new BentoCache({
-  default: 'memory'
+  default: 'memory',
 
   // Global level 👇
   ttl: '1h',

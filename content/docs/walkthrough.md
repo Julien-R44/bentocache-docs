@@ -38,7 +38,7 @@ Now, let's make the first easy step by adding a simple memory-cache to our app :
 
 ```ts
 // title: Memory Cache
-const bentoCache = new BentoCache({
+const bento = new BentoCache({
   default: 'cache',
   stores: { 
     cache: bentostore().useL1Layer(memoryDriver())
@@ -47,7 +47,7 @@ const bentoCache = new BentoCache({
 
 router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
-  const product = await bentoCache.getOrSet(
+  const product = await bento.getOrSet(
     `product:${productId}`, 
     () => Product.find(productId), 
     { ttl: '1m' }
@@ -119,7 +119,7 @@ Grace periods extend the time that cached data can be served even after their ex
 
 ```ts
 // title: Grace Period
-const bentoCache = new BentoCache({
+const bento = new BentoCache({
   default: 'cache',
   // highlight-start
   gracePeriod: {
@@ -135,7 +135,7 @@ const bentoCache = new BentoCache({
 
 router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
-  const product = await bentoCache.getOrSet(
+  const product = await bento.getOrSet(
     `product:${productId}`, 
     () => Product.find(productId), 
     { ttl: '1m' }
@@ -190,7 +190,7 @@ See the problem ? Let's introduce our Multi-Tier cache setup :
 ```ts
 // title: Hybrid driver
 const connection = process.env.REDIS_CREDENTIALS!
-const bentoCache = new BentoCache({
+const bento = new BentoCache({
   default: 'cache',
   gracePeriod: { 
     enabled: true, 
@@ -207,7 +207,7 @@ const bentoCache = new BentoCache({
 
 router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
-  const product = await bentoCache.getOrSet(
+  const product = await bento.getOrSet(
     `product:${productId}`, 
     () => Product.find(productId), 
     { ttl: '1m' }
@@ -236,7 +236,7 @@ However, it sometimes happens that the database's response time is prolonged, so
 ```ts
 // title: Soft timeouts
 const connection = process.env.REDIS_CREDENTIALS!
-const bentoCache = new BentoCache({
+const bento = new BentoCache({
   default: 'cache',
   gracePeriod: { 
     enabled: true, 
@@ -258,7 +258,7 @@ const bentoCache = new BentoCache({
 
 router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
-  const product = await bentoCache.getOrSet(
+  const product = await bento.getOrSet(
     `product:${productId}`, 
     () => Product.find(productId), 
     { ttl: '1m' }

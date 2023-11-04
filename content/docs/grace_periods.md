@@ -23,7 +23,7 @@ Grace periods can be configured at global, driver and operations levels. See the
 Let's imagine you have a simple controller that fetches a user from the database, and caches it for 10 minutes:
 
 ```ts
-cache.getOrSet('users:1', () => User.find(1), { ttl: '10m' })
+bento.getOrSet('users:1', () => User.find(1), { ttl: '10m' })
 ```
 
 Now, let's say your cache is empty. Someone request the user with id 1, but, the database is down, for any reasons. Without grace periods, this request will just fail and **will display an error to the user**.
@@ -31,7 +31,7 @@ Now, let's say your cache is empty. Someone request the user with id 1, but, the
 Now what if we add a grace period ?
 
 ```ts
-cache.getOrSet('users:1', () => User.find(1), {
+bento.getOrSet('users:1', () => User.find(1), {
   ttl: '10m',
   gracePeriod: { enabled: true, duration: '6h', fallbackDuration: '5m' }
 })

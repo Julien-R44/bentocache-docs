@@ -61,7 +61,7 @@ To give some perspective, here's a simple benchmark that shows the difference be
 ```ts
 // title: Benchmarked code
 benchmark
-  .add('BentoCache', () => await bentocache.get('key'))
+  .add('BentoCache', () => await bento.get('key'))
   .add('ioredis', () => await ioredis.get('key'))
 ```
 

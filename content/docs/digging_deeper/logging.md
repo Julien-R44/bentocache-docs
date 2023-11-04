@@ -44,7 +44,7 @@ const logger = pino({
   transport: { target: 'pino-pretty' }
 })
 
-const bentoCache = new BentoCache({
+const bento = new BentoCache({
   // ...
   logger,
 })

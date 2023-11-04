@@ -10,7 +10,7 @@ Order of precedence is as follows: **1. Operation level > 2. Store level > 3. Gl
 
 ```ts
 // title: Options levels
-const bentocache = new BentoCache({
+const bento = new BentoCache({
   default: 'memory',
 
   // Global level 👇
@@ -30,7 +30,7 @@ const bentocache = new BentoCache({
   }
 })
 
-bentocache.getOrSet('key', () => fetchFromDb(), {
+bento.getOrSet('key', () => fetchFromDb(), {
   // Operation level 👇
   ttl: '1h',
   gracePeriod: { enabled: true }

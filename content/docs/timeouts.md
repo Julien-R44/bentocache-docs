@@ -13,7 +13,7 @@ This allows you to set a maximum execution time for a factory. From the moment t
 Imagine the following call:
 
 ```ts
-const result = await cache.get('products', () => Product.all(), {
+const result = await bento.get('products', () => Product.all(), {
   gracePeriod: { enabled: true, duration: '6h' },
   timeouts: { soft: '200ms' }
 });
@@ -35,7 +35,7 @@ Hard timeouts are also used to control the maximum execution time of a factory. 
 The factory will still continue its execution in the background.
 
 ```ts
-const result = await cache.get('products', () => Product.all(), {
+const result = await bento.get('products', () => Product.all(), {
   timeouts: { hard: '1s' }
 });
 ```
@@ -46,7 +46,7 @@ Here, if the factory takes more than 1s to execute, then an exception will be th
 import { errors } from 'bentocache'
 
 try {
-  const result = await cache.get('products', () => Product.all(), {
+  const result = await bento.get('products', () => Product.all(), {
     timeouts: { hard: '1s' }
   });
 } catch (e) {
@@ -59,7 +59,7 @@ try {
 Note that you can use both soft and hard timeouts at the same time. Hard timeout must of course be greater than soft timeout.
 
 ```ts
-const result = await cache.get('products', () => Product.all(), {
+const result = await bento.get('products', () => Product.all(), {
   gracePeriod: { enabled: true, duration: '6h' },
   timeouts: { soft: '200ms', hard: '1s' }
 });

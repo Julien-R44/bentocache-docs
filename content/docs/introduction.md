@@ -61,8 +61,8 @@ To give some perspective, here's a simple benchmark that shows the difference be
 ```ts
 // title: Benchmarked code
 benchmark
-  .add('BentoCache', () => await bento.get('key'))
-  .add('ioredis', () => await ioredis.get('key'))
+  .add('BentoCache', async () => await bento.get('key'))
+  .add('ioredis', async () => await ioredis.get('key'))
 ```
 
 ![Redis vs Multi-tier caching](./redis_vs_mtier.png) 
@@ -132,7 +132,7 @@ All TTLs can be passed in a human-readable string format. We use [lukeed/ms](htt
 
 ```ts
 bento.getOrSet('foo', () => getFromDb(), {
-  ttl: '2.5h'
+  ttl: '2.5h',
   gracePeriod: { enabled: true, duration: '6h' }
 })
 ```

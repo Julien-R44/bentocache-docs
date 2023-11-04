@@ -4,10 +4,10 @@ summary: Learn how to create a custom cache driver for BentoCache
 
 # Create a custom cache driver
 
-Extending BentoCache with your own cache driver is easy. What you need is a class that implements the `CacheDriver` interface accessible from `bentocache/types`. The interface is defined as follows:
+Extending BentoCache with your own cache driver is easy. What you need is a class that implements the `L1CacheDriver` or `L2CacheDriver` interfaces accessible from `bentocache/types`. The interface is defined as follows:
 
 ```ts
-interface CacheDriver {
+interface L2CacheDriver {
   /**
    * Returns a new instance of the driver namespace
    */
@@ -61,31 +61,31 @@ interface CacheDriver {
 }
 ```
 
-So this should be quite easy to implement. Feel free to take a lot at [the existings drivers](link-to-repo) implementations for inspiration. 
+Similarly, the `L1CacheDriver` interface is the same, except that it is not async. 
+
+So this should be quite easy to implement. Feel free to take a lot at [the existings drivers](https://github.com/Julien-R44/bentocache/tree/develop/drivers) implementations for inspiration. 
 
 Also note that your driver will receive two additional parameters in the constructor : `ttl` and `prefix`. These parameters are common to every drivers and their purpose is explained in the [options](../options.md) page.
 
 Once you defined you driver, you can create a factory function that will be used by Bentocache to create instances of your driver at runtime. The factory function must be something like this:
 
 ```ts
-export function myDriver(options: MyDriverOptions) {
+import type { CreateDriverResult } from 'bentocache/types'
+
+export function myDriver(options: MyDriverOptions): CreateDriverResult<MyDriver> {
   return {
-    remote: {
-      options,
-      factory: (config: MyDriverOptions) => new MyDriver(config)
-    }
+    options,
+    factory: (config: MyDriverOptions) => new MyDriver(config)
   }
 }
 ```
 
-Most of the time you will probably want to develop a driver for a distributed cache. But if you want to replace the default first-level in-memory cache with a custom local driver, you should replace the `remote` key by `local`, and keep the same structure.
-
 Finally, you can use your driver when creating a new instance of Bentocache:
 
 ```ts
-import { Bentocache, bentostore } from 'bentocache'
+import { BentoCache, bentostore } from 'bentocache'
 
-const cache = new Bentocache({
+const cache = new BentoCache({
   default: 'myStore',
   stores: {
     myStore: bentostore()
@@ -96,12 +96,12 @@ const cache = new Bentocache({
 
 ## Tests
 
-If you want to test your driver and its compliance, Bentocache is shipped with a test suite for [Japa](https://japa.dev/docs) that you can use. You can use it as follow 
+If you want to test your driver and its compliance, Bentocache is shipped with a test suite for [Japa](https://japa.dev/docs) that you can use. Note that you will also need to have `@japa/assert` installed. Then, you can use it like this:
 
 ```ts
-// title: my_driver.spec.ts
+// title: tests/my_driver.spec.ts
 import { test } from '@japa/runner'
-import { registerCacheDriverTestSuite } from 'bentocache/tests'
+import { registerCacheDriverTestSuite } from 'bentocache/test_suite'
 import { MyDriver } from '../src/my_driver.js'
 
 registerCacheDriverTestSuite({

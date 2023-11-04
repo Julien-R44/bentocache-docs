@@ -58,7 +58,7 @@ const bento = new BentoCache({
   default: 'users',
   stores: {
     users: bentostore()
-      .useL2Layer(redisDriver({ prefix: 'users' }))
+      .useL2Layer(redisDriver({ prefix: 'users' })),
 
     posts: bentostore()
       .useL2Layer(redisDriver({ prefix: 'posts' }))

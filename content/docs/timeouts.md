@@ -50,7 +50,7 @@ try {
     timeouts: { hard: '1s' }
   });
 } catch (e) {
-  if (e instanceof errors.E_FACTORY_TIMEOUT_ERROR) {
+  if (e instanceof errors.E_FACTORY_HARD_TIMEOUT) {
     // handle timeout
   }
 }

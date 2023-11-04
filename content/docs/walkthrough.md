@@ -126,7 +126,7 @@ const bentoCache = new BentoCache({
     enabled: true,
     duration: '6h',
     fallbackDuration: '30s'
-  }
+  },
   // highlight-end
   stores: {
     cache: bentostore().useL1Layer(memoryDriver()) 
@@ -196,7 +196,7 @@ const bentoCache = new BentoCache({
     enabled: true, 
     duration: '6h', 
     fallbackDuration: '30s' 
-  }
+  },
   stores: { 
     cache: bentostore()
       .useL1Layer(memoryDriver())
@@ -242,7 +242,7 @@ const bentoCache = new BentoCache({
     enabled: true, 
     duration: '6h', 
     fallbackDuration: '30s' 
-  }
+  },
   // highlight-start
   timeouts: {
     soft: '500ms',

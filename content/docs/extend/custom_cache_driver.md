@@ -83,7 +83,7 @@ Most of the time you will probably want to develop a driver for a distributed ca
 Finally, you can use your driver when creating a new instance of Bentocache:
 
 ```ts
-import { Bentocache } from 'bentocache'
+import { Bentocache, bentostore } from 'bentocache'
 
 const cache = new Bentocache({
   default: 'myStore',

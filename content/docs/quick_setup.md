@@ -44,7 +44,7 @@ const bento = new BentoCache({
     // A first cache store named "myCache" using 
     // only L1 in-memory cache
     myCache: bentostore()
-      .useL1Layer(memoryDriver({ maxSize: 10_000 }))
+      .useL1Layer(memoryDriver({ maxSize: 10_000 })),
 
     // A second cache store named "multitier" using
     // a in-memory cache as L1 and a Redis cache as L2
@@ -68,7 +68,7 @@ See [the documentation on named caches](./named_caches.md) for more information.
 ```ts
 import { BentoCache, bentostore } from 'bentocache'
 import { memoryDriver } from 'bentocache/drivers/memory'
-import { redisDriver } from 'bentocache/drivers/redis'
+import { redisDriver, redisBusDriver } from 'bentocache/drivers/redis'
 
 const bento = new BentoCache({
   default: 'cache',
@@ -106,7 +106,7 @@ export default class UsersController {
   async show(req) {
     const userId = req.params.id
 
-    const users = bentocache.namespace('users')
+    const users = bento.namespace('users')
     const user = users.getOrSet(`${userId}`, '5m', () => {
       return User.find(userId)
     })
@@ -135,7 +135,7 @@ export default class UsersController {
   async show(req) {
     const userId = req.params.id
 
-    const users = bentocache.namespace('users')
+    const users = bento.namespace('users')
     const user = users.getOrSet(userId, '5m', () => {
       return User.find(userId)
     })

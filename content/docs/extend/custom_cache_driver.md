@@ -85,7 +85,7 @@ Finally, you can use your driver when creating a new instance of Bentocache:
 ```ts
 import { BentoCache, bentostore } from 'bentocache'
 
-const cache = new BentoCache({
+const bento = new BentoCache({
   default: 'myStore',
   stores: {
     myStore: bentostore()

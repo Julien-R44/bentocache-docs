@@ -14,7 +14,7 @@ Imagine this simple route that allows retrieving a post by its ID.
 ```ts
 router.get('/posts/:id', async (request) => {
   const { id } = request.params
-  const post = await bentoCache.getOrSet(
+  const post = await bento.getOrSet(
     `post:${id}`, 
     () => getPostFromDb(id), 
     { ttl: '1h' }

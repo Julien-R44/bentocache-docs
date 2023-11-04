@@ -151,7 +151,7 @@ export default class UsersController {
     await user.update(req.body)
 
     // Invalidate the cache
-    const users = bentocache.namespace('users')
+    const users = bento.namespace('users')
     await users.delete(userId)
   }
 }

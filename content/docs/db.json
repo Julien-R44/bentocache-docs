@@ -94,5 +94,11 @@
     "title": "Create a custom bus driver",
     "contentPath": "./extend/custom_bus_driver.md",
     "category": "Extend"
+  },
+  {
+    "permalink": "create-plugin",
+    "title": "Create a plugin",
+    "contentPath": "./extend/create_plugin.md",
+    "category": "Extend"
   }
 ]

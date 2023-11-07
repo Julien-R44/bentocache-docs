@@ -166,7 +166,7 @@ You will need to install `pg` to use this driver.
 
 ```ts
 import { BentoCache, bentostore } from 'bentocache'
-import { postgresDriver } from 'bentocache/drivers/postgres'
+import { postgresDriver } from 'bentocache/drivers/sql'
 
 const bento = new BentoCache({
   default: 'pg',
@@ -189,7 +189,7 @@ You will need to install `mysql2` to use this driver.
 
 ```ts
 import { BentoCache, bentostore } from 'bentocache'
-import { mysqlDriver } from 'bentocache/drivers/mysql'
+import { mysqlDriver } from 'bentocache/drivers/sql'
 
 const bento = new BentoCache({
   default: 'mysql',
@@ -206,13 +206,31 @@ const bento = new BentoCache({
 })
 ```
 
-### SQLite
+### SQLite ( better-sqlite3 )
 
 You will need to install `better-sqlite3` to use this driver.
 
 ```ts
 import { BentoCache, bentostore } from 'bentocache'
-import { sqliteDriver } from 'bentocache/drivers/sqlite'
+import { betterSqliteDriver } from 'bentocache/drivers/sql'
+
+const bento = new BentoCache({
+  default: 'sqlite',
+  stores: {
+    sqlite: bentostore().useL2Layer(betterSqliteDriver({
+      connection: { filename: 'cache.sqlite3' },
+    }))
+  }
+})
+```
+
+### SQLite ( sqlite3 )
+
+You will need to install `sqlite3` to use this driver.
+
+```ts
+import { BentoCache, bentostore } from 'bentocache'
+import { sqliteDriver } from 'bentocache/drivers/sql'
 
 const bento = new BentoCache({
   default: 'sqlite',
